@@ -15,18 +15,16 @@
  */
 package com.lmax.disruptor;
 
+import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Test;
-
-public class MultiProducerSequencerTest
-{
+public class MultiProducerSequencerTest {
     private final Sequencer publisher = new MultiProducerSequencer(1024, new BlockingWaitStrategy());
 
     @Test
-    public void shouldOnlyAllowMessagesToBeAvailableIfSpecificallyPublished() throws Exception
-    {
+    public void shouldOnlyAllowMessagesToBeAvailableIfSpecificallyPublished() throws Exception {
         publisher.publish(3);
         publisher.publish(5);
 

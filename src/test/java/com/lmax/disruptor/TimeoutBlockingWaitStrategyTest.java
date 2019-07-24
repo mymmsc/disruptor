@@ -8,11 +8,9 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class TimeoutBlockingWaitStrategyTest
-{
+public class TimeoutBlockingWaitStrategyTest {
     @Test
-    public void shouldTimeoutWaitFor() throws Exception
-    {
+    public void shouldTimeoutWaitFor() throws Exception {
         final SequenceBarrier sequenceBarrier = new DummySequenceBarrier();
 
         long theTimeout = 500;
@@ -22,13 +20,10 @@ public class TimeoutBlockingWaitStrategyTest
 
         long t0 = System.currentTimeMillis();
 
-        try
-        {
+        try {
             waitStrategy.waitFor(6, cursor, dependent, sequenceBarrier);
             fail("TimeoutException should have been thrown");
-        }
-        catch (TimeoutException e)
-        {
+        } catch (TimeoutException e) {
         }
 
         long t1 = System.currentTimeMillis();

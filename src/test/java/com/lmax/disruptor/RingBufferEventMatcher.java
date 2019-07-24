@@ -7,27 +7,22 @@ import org.hamcrest.TypeSafeMatcher;
 
 import static org.hamcrest.CoreMatchers.is;
 
-final class RingBufferEventMatcher extends TypeSafeMatcher<RingBuffer<Object[]>>
-{
+final class RingBufferEventMatcher extends TypeSafeMatcher<RingBuffer<Object[]>> {
     private final Matcher<?>[] expectedValueMatchers;
 
-    private RingBufferEventMatcher(final Matcher<?>[] expectedValueMatchers)
-    {
+    private RingBufferEventMatcher(final Matcher<?>[] expectedValueMatchers) {
         this.expectedValueMatchers = expectedValueMatchers;
     }
 
     @Factory
-    public static RingBufferEventMatcher ringBufferWithEvents(final Matcher<?>... valueMatchers)
-    {
+    public static RingBufferEventMatcher ringBufferWithEvents(final Matcher<?>... valueMatchers) {
         return new RingBufferEventMatcher(valueMatchers);
     }
 
     @Factory
-    public static RingBufferEventMatcher ringBufferWithEvents(final Object... values)
-    {
+    public static RingBufferEventMatcher ringBufferWithEvents(final Object... values) {
         Matcher<?>[] valueMatchers = new Matcher[values.length];
-        for (int i = 0; i < values.length; i++)
-        {
+        for (int i = 0; i < values.length; i++) {
             final Object value = values[i];
             valueMatchers[i] = is(value);
         }
@@ -35,11 +30,9 @@ final class RingBufferEventMatcher extends TypeSafeMatcher<RingBuffer<Object[]>>
     }
 
     @Override
-    public boolean matchesSafely(final RingBuffer<Object[]> ringBuffer)
-    {
+    public boolean matchesSafely(final RingBuffer<Object[]> ringBuffer) {
         boolean matches = true;
-        for (int i = 0; i < expectedValueMatchers.length; i++)
-        {
+        for (int i = 0; i < expectedValueMatchers.length; i++) {
             final Matcher<?> expectedValueMatcher = expectedValueMatchers[i];
             matches &= expectedValueMatcher.matches(ringBuffer.get(i)[0]);
         }
@@ -47,12 +40,10 @@ final class RingBufferEventMatcher extends TypeSafeMatcher<RingBuffer<Object[]>>
     }
 
     @Override
-    public void describeTo(final Description description)
-    {
+    public void describeTo(final Description description) {
         description.appendText("Expected ring buffer with events matching: ");
 
-        for (Matcher<?> expectedValueMatcher : expectedValueMatchers)
-        {
+        for (Matcher<?> expectedValueMatcher : expectedValueMatchers) {
             expectedValueMatcher.describeTo(description);
         }
     }

@@ -15,7 +15,10 @@
  */
 package com.lmax.disruptor.queue;
 
-import static com.lmax.disruptor.support.PerfTestUtil.failIf;
+import com.lmax.disruptor.AbstractPerfTestQueue;
+import com.lmax.disruptor.support.FunctionQueueProcessor;
+import com.lmax.disruptor.support.FunctionStep;
+import com.lmax.disruptor.util.DaemonThreadFactory;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -24,10 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.lmax.disruptor.AbstractPerfTestQueue;
-import com.lmax.disruptor.support.FunctionQueueProcessor;
-import com.lmax.disruptor.support.FunctionStep;
-import com.lmax.disruptor.util.DaemonThreadFactory;
+import static com.lmax.disruptor.support.PerfTestUtil.failIf;
 
 /**
  * <pre>
@@ -58,8 +58,7 @@ import com.lmax.disruptor.util.DaemonThreadFactory;
  *
  * </pre>
  */
-public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTestQueue
-{
+public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTestQueue {
     private static final int NUM_EVENT_PROCESSORS = 3;
     private static final int BUFFER_SIZE = 1024 * 8;
     private static final long ITERATIONS = 1000L * 1000L * 10L;
@@ -72,13 +71,11 @@ public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTes
         long temp = 0L;
         long operandTwo = OPERAND_TWO_INITIAL_VALUE;
 
-        for (long i = 0; i < ITERATIONS; i++)
-        {
+        for (long i = 0; i < ITERATIONS; i++) {
             long stepOneResult = i + operandTwo--;
             long stepTwoResult = stepOneResult + 3;
 
-            if ((stepTwoResult & 4L) == 4L)
-            {
+            if ((stepTwoResult & 4L) == 4L) {
                 ++temp;
             }
         }
@@ -93,23 +90,21 @@ public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTes
     private final BlockingQueue<Long> stepThreeQueue = new LinkedBlockingQueue<Long>(BUFFER_SIZE);
 
     private final FunctionQueueProcessor stepOneQueueProcessor =
-        new FunctionQueueProcessor(FunctionStep.ONE, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
+            new FunctionQueueProcessor(FunctionStep.ONE, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
     private final FunctionQueueProcessor stepTwoQueueProcessor =
-        new FunctionQueueProcessor(FunctionStep.TWO, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
+            new FunctionQueueProcessor(FunctionStep.TWO, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
     private final FunctionQueueProcessor stepThreeQueueProcessor =
-        new FunctionQueueProcessor(FunctionStep.THREE, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
+            new FunctionQueueProcessor(FunctionStep.THREE, stepOneQueue, stepTwoQueue, stepThreeQueue, ITERATIONS - 1);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected int getRequiredProcessorCount()
-    {
+    protected int getRequiredProcessorCount() {
         return 4;
     }
 
     @Override
-    protected long runQueuePass() throws Exception
-    {
+    protected long runQueuePass() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         stepThreeQueueProcessor.reset(latch);
 
@@ -121,8 +116,7 @@ public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTes
         long start = System.currentTimeMillis();
 
         long operandTwo = OPERAND_TWO_INITIAL_VALUE;
-        for (long i = 0; i < ITERATIONS; i++)
-        {
+        for (long i = 0; i < ITERATIONS; i++) {
             long[] values = new long[2];
             values[0] = i;
             values[1] = operandTwo--;
@@ -136,8 +130,7 @@ public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTes
         stepTwoQueueProcessor.halt();
         stepThreeQueueProcessor.halt();
 
-        for (Future<?> future : futures)
-        {
+        for (Future<?> future : futures) {
             future.cancel(true);
         }
 
@@ -146,8 +139,7 @@ public final class OneToThreePipelineQueueThroughputTest extends AbstractPerfTes
         return opsPerSecond;
     }
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         new OneToThreePipelineQueueThroughputTest().testImplementations();
     }
 }

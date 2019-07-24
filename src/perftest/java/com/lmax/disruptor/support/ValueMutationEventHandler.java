@@ -21,31 +21,26 @@ import com.lmax.disruptor.util.PaddedLong;
 
 import java.util.concurrent.CountDownLatch;
 
-public final class ValueMutationEventHandler implements EventHandler<ValueEvent>, BatchStartAware
-{
+public final class ValueMutationEventHandler implements EventHandler<ValueEvent>, BatchStartAware {
     private final Operation operation;
     private final PaddedLong value = new PaddedLong();
     private final PaddedLong batchesProcessed = new PaddedLong();
     private long count;
     private CountDownLatch latch;
 
-    public ValueMutationEventHandler(final Operation operation)
-    {
+    public ValueMutationEventHandler(final Operation operation) {
         this.operation = operation;
     }
 
-    public long getValue()
-    {
+    public long getValue() {
         return value.get();
     }
 
-    public long getBatchesProcessed()
-    {
+    public long getBatchesProcessed() {
         return batchesProcessed.get();
     }
 
-    public void reset(final CountDownLatch latch, final long expectedCount)
-    {
+    public void reset(final CountDownLatch latch, final long expectedCount) {
         value.set(0L);
         this.latch = latch;
         count = expectedCount;
@@ -53,19 +48,16 @@ public final class ValueMutationEventHandler implements EventHandler<ValueEvent>
     }
 
     @Override
-    public void onEvent(final ValueEvent event, final long sequence, final boolean endOfBatch) throws Exception
-    {
+    public void onEvent(final ValueEvent event, final long sequence, final boolean endOfBatch) throws Exception {
         value.set(operation.op(value.get(), event.getValue()));
 
-        if (count == sequence)
-        {
+        if (count == sequence) {
             latch.countDown();
         }
     }
 
     @Override
-    public void onBatchStart(long batchSize)
-    {
+    public void onBatchStart(long batchSize) {
         batchesProcessed.increment();
     }
 }

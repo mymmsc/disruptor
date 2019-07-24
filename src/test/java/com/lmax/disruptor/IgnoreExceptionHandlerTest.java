@@ -18,11 +18,9 @@ package com.lmax.disruptor;
 import com.lmax.disruptor.support.TestEvent;
 import org.junit.Test;
 
-public final class IgnoreExceptionHandlerTest
-{
+public final class IgnoreExceptionHandlerTest {
     @Test
-    public void shouldHandleAndIgnoreException()
-    {
+    public void shouldHandleAndIgnoreException() {
         final Exception ex = new Exception();
         final TestEvent event = new TestEvent();
 

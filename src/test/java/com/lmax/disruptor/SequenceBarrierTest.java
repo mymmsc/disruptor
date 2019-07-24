@@ -28,18 +28,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-public final class SequenceBarrierTest
-{
+public final class SequenceBarrierTest {
     private final RingBuffer<StubEvent> ringBuffer = createMultiProducer(StubEvent.EVENT_FACTORY, 64);
 
-    public SequenceBarrierTest()
-    {
+    public SequenceBarrierTest() {
         ringBuffer.addGatingSequences(new NoOpEventProcessor(ringBuffer).getSequence());
     }
 
     @Test
-    public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsAhead() throws Exception
-    {
+    public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsAhead() throws Exception {
         final long expectedNumberMessages = 10;
         final long expectedWorkSequence = 9;
         fillRingBuffer(expectedNumberMessages);
@@ -55,31 +52,26 @@ public final class SequenceBarrierTest
     }
 
     @Test
-    public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer() throws Exception
-    {
+    public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer() throws Exception {
         long expectedNumberMessages = 10;
         fillRingBuffer(expectedNumberMessages);
 
         final DummyEventProcessor[] workers = new DummyEventProcessor[3];
-        for (int i = 0, size = workers.length; i < size; i++)
-        {
+        for (int i = 0, size = workers.length; i < size; i++) {
             workers[i] = new DummyEventProcessor();
             workers[i].setSequence(expectedNumberMessages - 1);
         }
 
         final SequenceBarrier sequenceBarrier = ringBuffer.newBarrier(Util.getSequencesFor(workers));
 
-        Runnable runnable = new Runnable()
-        {
-            public void run()
-            {
+        Runnable runnable = new Runnable() {
+            public void run() {
                 long sequence = ringBuffer.next();
                 StubEvent event = ringBuffer.get(sequence);
                 event.setValue((int) sequence);
                 ringBuffer.publish(sequence);
 
-                for (DummyEventProcessor stubWorker : workers)
-                {
+                for (DummyEventProcessor stubWorker : workers) {
                     stubWorker.setSequence(sequence);
                 }
             }
@@ -93,8 +85,7 @@ public final class SequenceBarrierTest
     }
 
     @Test
-    public void shouldInterruptDuringBusySpin() throws Exception
-    {
+    public void shouldInterruptDuringBusySpin() throws Exception {
         final long expectedNumberMessages = 10;
         fillRingBuffer(expectedNumberMessages);
 
@@ -104,28 +95,21 @@ public final class SequenceBarrierTest
         final Sequence sequence3 = new CountDownLatchSequence(8L, latch);
 
         final SequenceBarrier sequenceBarrier =
-            ringBuffer.newBarrier(sequence1, sequence2, sequence3);
+                ringBuffer.newBarrier(sequence1, sequence2, sequence3);
 
         final boolean[] alerted = {false};
         Thread t = new Thread(
-            new Runnable()
-            {
-                public void run()
-                {
-                    try
-                    {
-                        sequenceBarrier.waitFor(expectedNumberMessages - 1);
+                new Runnable() {
+                    public void run() {
+                        try {
+                            sequenceBarrier.waitFor(expectedNumberMessages - 1);
+                        } catch (AlertException e) {
+                            alerted[0] = true;
+                        } catch (Exception e) {
+                            // don't care
+                        }
                     }
-                    catch (AlertException e)
-                    {
-                        alerted[0] = true;
-                    }
-                    catch (Exception e)
-                    {
-                        // don't care
-                    }
-                }
-            });
+                });
 
         t.start();
         latch.await(3, TimeUnit.SECONDS);
@@ -136,26 +120,21 @@ public final class SequenceBarrierTest
     }
 
     @Test
-    public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind() throws Exception
-    {
+    public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind() throws Exception {
         long expectedNumberMessages = 10;
         fillRingBuffer(expectedNumberMessages);
 
         final DummyEventProcessor[] eventProcessors = new DummyEventProcessor[3];
-        for (int i = 0, size = eventProcessors.length; i < size; i++)
-        {
+        for (int i = 0, size = eventProcessors.length; i < size; i++) {
             eventProcessors[i] = new DummyEventProcessor();
             eventProcessors[i].setSequence(expectedNumberMessages - 2);
         }
 
         final SequenceBarrier sequenceBarrier = ringBuffer.newBarrier(Util.getSequencesFor(eventProcessors));
 
-        Runnable runnable = new Runnable()
-        {
-            public void run()
-            {
-                for (DummyEventProcessor stubWorker : eventProcessors)
-                {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                for (DummyEventProcessor stubWorker : eventProcessors) {
                     stubWorker.setSequence(stubWorker.getSequence().get() + 1L);
                 }
             }
@@ -171,8 +150,7 @@ public final class SequenceBarrierTest
     }
 
     @Test
-    public void shouldSetAndClearAlertStatus()
-    {
+    public void shouldSetAndClearAlertStatus() {
         SequenceBarrier sequenceBarrier = ringBuffer.newBarrier();
 
         assertFalse(sequenceBarrier.isAlerted());
@@ -184,10 +162,8 @@ public final class SequenceBarrierTest
         assertFalse(sequenceBarrier.isAlerted());
     }
 
-    private void fillRingBuffer(long expectedNumberMessages) throws InterruptedException
-    {
-        for (long i = 0; i < expectedNumberMessages; i++)
-        {
+    private void fillRingBuffer(long expectedNumberMessages) throws InterruptedException {
+        for (long i = 0; i < expectedNumberMessages; i++) {
             long sequence = ringBuffer.next();
             StubEvent event = ringBuffer.get(sequence);
             event.setValue((int) i);
@@ -195,19 +171,16 @@ public final class SequenceBarrierTest
         }
     }
 
-    private static final class CountDownLatchSequence extends Sequence
-    {
+    private static final class CountDownLatchSequence extends Sequence {
         private final CountDownLatch latch;
 
-        private CountDownLatchSequence(final long initialValue, final CountDownLatch latch)
-        {
+        private CountDownLatchSequence(final long initialValue, final CountDownLatch latch) {
             super(initialValue);
             this.latch = latch;
         }
 
         @Override
-        public long get()
-        {
+        public long get() {
             latch.countDown();
             return super.get();
         }

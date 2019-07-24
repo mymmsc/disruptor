@@ -15,18 +15,23 @@
  */
 package com.lmax.disruptor.sequenced;
 
-import static com.lmax.disruptor.RingBuffer.createSingleProducer;
-import static com.lmax.disruptor.support.PerfTestUtil.failIfNot;
+import com.lmax.disruptor.AbstractPerfTestDisruptor;
+import com.lmax.disruptor.BatchEventProcessor;
+import com.lmax.disruptor.PerfTestContext;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.YieldingWaitStrategy;
+import com.lmax.disruptor.support.PerfTestUtil;
+import com.lmax.disruptor.support.ValueAdditionEventHandler;
+import com.lmax.disruptor.support.ValueEvent;
+import com.lmax.disruptor.util.DaemonThreadFactory;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.lmax.disruptor.*;
-import com.lmax.disruptor.support.PerfTestUtil;
-import com.lmax.disruptor.support.ValueAdditionEventHandler;
-import com.lmax.disruptor.support.ValueEvent;
-import com.lmax.disruptor.util.DaemonThreadFactory;
+import static com.lmax.disruptor.RingBuffer.createSingleProducer;
+import static com.lmax.disruptor.support.PerfTestUtil.failIfNot;
 
 /**
  * <pre>
@@ -57,8 +62,7 @@ import com.lmax.disruptor.util.DaemonThreadFactory;
  *
  * </pre>
  */
-public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTestDisruptor
-{
+public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTestDisruptor {
     public static final int BATCH_SIZE = 10;
     private static final int BUFFER_SIZE = 1024 * 64;
     private static final long ITERATIONS = 1000L * 1000L * 100L;
@@ -68,11 +72,11 @@ public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTest
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     private final RingBuffer<ValueEvent> ringBuffer =
-        createSingleProducer(ValueEvent.EVENT_FACTORY, BUFFER_SIZE, new YieldingWaitStrategy());
+            createSingleProducer(ValueEvent.EVENT_FACTORY, BUFFER_SIZE, new YieldingWaitStrategy());
     private final SequenceBarrier sequenceBarrier = ringBuffer.newBarrier();
     private final ValueAdditionEventHandler handler = new ValueAdditionEventHandler();
     private final BatchEventProcessor<ValueEvent> batchEventProcessor =
-        new BatchEventProcessor<ValueEvent>(ringBuffer, sequenceBarrier, handler);
+            new BatchEventProcessor<ValueEvent>(ringBuffer, sequenceBarrier, handler);
 
     {
         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
@@ -81,14 +85,12 @@ public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTest
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     @Override
-    protected int getRequiredProcessorCount()
-    {
+    protected int getRequiredProcessorCount() {
         return 2;
     }
 
     @Override
-    protected PerfTestContext runDisruptorPass() throws InterruptedException
-    {
+    protected PerfTestContext runDisruptorPass() throws InterruptedException {
         PerfTestContext perfTestContext = new PerfTestContext();
         final CountDownLatch latch = new CountDownLatch(1);
         long expectedCount = batchEventProcessor.getSequence().get() + ITERATIONS * BATCH_SIZE;
@@ -98,12 +100,10 @@ public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTest
 
         final RingBuffer<ValueEvent> rb = ringBuffer;
 
-        for (long i = 0; i < ITERATIONS; i++)
-        {
+        for (long i = 0; i < ITERATIONS; i++) {
             long hi = rb.next(BATCH_SIZE);
             long lo = hi - (BATCH_SIZE - 1);
-            for (long l = lo; l <= hi; l++)
-            {
+            for (long l = lo; l <= hi; l++) {
                 rb.get(l).setValue(i);
             }
             rb.publish(lo, hi);
@@ -120,16 +120,13 @@ public final class OneToOneSequencedBatchThroughputTest extends AbstractPerfTest
         return perfTestContext;
     }
 
-    private void waitForEventProcessorSequence(long expectedCount) throws InterruptedException
-    {
-        while (batchEventProcessor.getSequence().get() != expectedCount)
-        {
+    private void waitForEventProcessorSequence(long expectedCount) throws InterruptedException {
+        while (batchEventProcessor.getSequence().get() != expectedCount) {
             Thread.sleep(1);
         }
     }
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         OneToOneSequencedBatchThroughputTest test = new OneToOneSequencedBatchThroughputTest();
         test.testImplementations();
     }

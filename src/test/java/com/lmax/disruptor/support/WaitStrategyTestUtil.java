@@ -27,13 +27,11 @@ import java.util.concurrent.Executors;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class WaitStrategyTestUtil
-{
+public class WaitStrategyTestUtil {
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     public static void assertWaitForWithDelayOf(long sleepTimeMillis, WaitStrategy waitStrategy)
-        throws InterruptedException, BrokenBarrierException, AlertException, TimeoutException
-    {
+            throws InterruptedException, BrokenBarrierException, AlertException, TimeoutException {
         SequenceUpdater sequenceUpdater = new SequenceUpdater(sleepTimeMillis, waitStrategy);
         EXECUTOR.execute(sequenceUpdater);
         sequenceUpdater.waitForStartup();

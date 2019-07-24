@@ -15,22 +15,19 @@
  */
 package com.lmax.disruptor;
 
+import com.lmax.disruptor.support.LongEvent;
+import org.junit.Test;
+
 import static com.lmax.disruptor.RingBuffer.createMultiProducer;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Test;
-
-import com.lmax.disruptor.support.LongEvent;
-
-public class EventPublisherTest implements EventTranslator<LongEvent>
-{
+public class EventPublisherTest implements EventTranslator<LongEvent> {
     private static final int BUFFER_SIZE = 32;
     private RingBuffer<LongEvent> ringBuffer = createMultiProducer(LongEvent.FACTORY, BUFFER_SIZE);
 
     @Test
-    public void shouldPublishEvent()
-    {
+    public void shouldPublishEvent() {
         ringBuffer.addGatingSequences(new NoOpEventProcessor(ringBuffer).getSequence());
 
         ringBuffer.publishEvent(this);
@@ -41,17 +38,14 @@ public class EventPublisherTest implements EventTranslator<LongEvent>
     }
 
     @Test
-    public void shouldTryPublishEvent() throws Exception
-    {
+    public void shouldTryPublishEvent() throws Exception {
         ringBuffer.addGatingSequences(new Sequence());
 
-        for (int i = 0; i < BUFFER_SIZE; i++)
-        {
+        for (int i = 0; i < BUFFER_SIZE; i++) {
             assertThat(ringBuffer.tryPublishEvent(this), is(true));
         }
 
-        for (int i = 0; i < BUFFER_SIZE; i++)
-        {
+        for (int i = 0; i < BUFFER_SIZE; i++) {
             assertThat(Long.valueOf(ringBuffer.get(i).get()), is(Long.valueOf(i + 29L)));
         }
 
@@ -59,8 +53,7 @@ public class EventPublisherTest implements EventTranslator<LongEvent>
     }
 
     @Override
-    public void translateTo(LongEvent event, long sequence)
-    {
+    public void translateTo(LongEvent event, long sequence) {
         event.set(sequence + 29);
     }
 }

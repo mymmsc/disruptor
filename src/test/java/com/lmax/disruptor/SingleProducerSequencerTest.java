@@ -3,17 +3,14 @@ package com.lmax.disruptor;
 import org.junit.Test;
 
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
-public class SingleProducerSequencerTest
-{
+public class SingleProducerSequencerTest {
     @Test
-    public void shouldNotUpdateCursorDuringHasAvailableCapacity() throws Exception
-    {
+    public void shouldNotUpdateCursorDuringHasAvailableCapacity() throws Exception {
         SingleProducerSequencer sequencer = new SingleProducerSequencer(16, new BusySpinWaitStrategy());
 
-        for (int i = 0; i < 32; i++)
-        {
+        for (int i = 0; i < 32; i++) {
             long next = sequencer.next();
             assertThat(sequencer.cursor.get(), not(next));
 

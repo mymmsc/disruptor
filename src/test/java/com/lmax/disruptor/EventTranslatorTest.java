@@ -19,13 +19,11 @@ import com.lmax.disruptor.support.StubEvent;
 import org.junit.Assert;
 import org.junit.Test;
 
-public final class EventTranslatorTest
-{
+public final class EventTranslatorTest {
     private static final String TEST_VALUE = "Wibble";
 
     @Test
-    public void shouldTranslateOtherDataIntoAnEvent()
-    {
+    public void shouldTranslateOtherDataIntoAnEvent() {
         StubEvent event = StubEvent.EVENT_FACTORY.newInstance();
         EventTranslator<StubEvent> eventTranslator = new ExampleEventTranslator(TEST_VALUE);
 
@@ -35,18 +33,15 @@ public final class EventTranslatorTest
     }
 
     public static final class ExampleEventTranslator
-        implements EventTranslator<StubEvent>
-    {
+            implements EventTranslator<StubEvent> {
         private final String testValue;
 
-        public ExampleEventTranslator(final String testValue)
-        {
+        public ExampleEventTranslator(final String testValue) {
             this.testValue = testValue;
         }
 
         @Override
-        public void translateTo(final StubEvent event, long sequence)
-        {
+        public void translateTo(final StubEvent event, long sequence) {
             event.setTestString(testValue);
         }
     }

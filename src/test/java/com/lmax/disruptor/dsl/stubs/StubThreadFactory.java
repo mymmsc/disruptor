@@ -24,20 +24,17 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class StubThreadFactory implements ThreadFactory
-{
+public final class StubThreadFactory implements ThreadFactory {
     private final DaemonThreadFactory threadFactory = DaemonThreadFactory.INSTANCE;
     private final Collection<Thread> threads = new CopyOnWriteArrayList<Thread>();
     private final AtomicBoolean ignoreExecutions = new AtomicBoolean(false);
     private final AtomicInteger executionCount = new AtomicInteger(0);
 
     @Override
-    public Thread newThread(final Runnable command)
-    {
+    public Thread newThread(final Runnable command) {
         executionCount.getAndIncrement();
         Runnable toExecute = command;
-        if(ignoreExecutions.get())
-        {
+        if (ignoreExecutions.get()) {
             toExecute = new NoOpRunnable();
         }
         final Thread thread = threadFactory.newThread(toExecute);
@@ -46,19 +43,13 @@ public final class StubThreadFactory implements ThreadFactory
         return thread;
     }
 
-    public void joinAllThreads()
-    {
-        for (Thread thread : threads)
-        {
-            if (thread.isAlive())
-            {
-                try
-                {
+    public void joinAllThreads() {
+        for (Thread thread : threads) {
+            if (thread.isAlive()) {
+                try {
                     thread.interrupt();
                     thread.join(5000);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -69,21 +60,17 @@ public final class StubThreadFactory implements ThreadFactory
         threads.clear();
     }
 
-    public void ignoreExecutions()
-    {
+    public void ignoreExecutions() {
         ignoreExecutions.set(true);
     }
 
-    public int getExecutionCount()
-    {
+    public int getExecutionCount() {
         return executionCount.get();
     }
 
-    private static final class NoOpRunnable implements Runnable
-    {
+    private static final class NoOpRunnable implements Runnable {
         @Override
-        public void run()
-        {
+        public void run() {
         }
     }
 }
